@@ -361,3 +361,17 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+secrets/
+**/secrets.json
+
+# Local file storage (uploaded documents)
+uploads/
+
+# OS
+Thumbs.db
+.DS_Store
