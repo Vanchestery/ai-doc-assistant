@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="ai-doc-assistant/ai-doc-assistant.csproj" />
+  <Project Path="src/AiDocAssistant.Core/AiDocAssistant.Core.csproj" />
 </Solution>
