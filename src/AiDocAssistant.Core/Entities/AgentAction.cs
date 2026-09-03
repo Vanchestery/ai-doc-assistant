@@ -1,17 +1,17 @@
 namespace AiDocAssistant.Core.Entities;
 
-/// <summary>Задача агента: вызов tool (reconcile, summarize, generate_report).</summary>
+/// <summary>Agent task: a tool call (reconcile, summarize, generate_report).</summary>
 public class AgentAction
 {
     public Guid Id { get; set; }
 
-    /// <summary>Имя tool: reconcile, summarize, generate_report.</summary>
+    /// <summary>Tool name: reconcile, summarize, generate_report.</summary>
     public string Tool { get; set; } = null!;
 
-    /// <summary>Вход задачи (JSON: documentIds и параметры).</summary>
+    /// <summary>Task input (JSON: documentIds and parameters).</summary>
     public string InputJson { get; set; } = null!;
 
-    /// <summary>Результат tool (JSON).</summary>
+    /// <summary>Tool result (JSON).</summary>
     public string? ResultJson { get; set; }
 
     public AgentActionStatus Status { get; set; }

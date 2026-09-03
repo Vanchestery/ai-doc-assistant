@@ -6,7 +6,7 @@ public enum ChatRole
     Assistant = 1
 }
 
-/// <summary>Сообщение в сессии чата. У assistant — JSON цитат на использованные чанки.</summary>
+/// <summary>A message in a chat session. Assistant messages may include JSON citations of used chunks.</summary>
 public class ChatMessage
 {
     public Guid Id { get; set; }
@@ -14,7 +14,7 @@ public class ChatMessage
     public ChatRole Role { get; set; }
     public string Content { get; set; } = null!;
 
-    /// <summary>JSON-массив <see cref="ChatCitation"/> — только для ответов ассистента.</summary>
+    /// <summary>JSON array of <see cref="ChatCitation"/> — assistant replies only.</summary>
     public string? CitationsJson { get; set; }
 
     public string? Model { get; set; }

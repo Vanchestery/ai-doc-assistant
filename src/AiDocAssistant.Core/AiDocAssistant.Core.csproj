@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Тип Vector для эмбеддинга в сущности Chunk. Пакет крошечный (только value-тип),
-         EF-интеграция (Pgvector.EntityFrameworkCore) остаётся в Infrastructure. -->
+    <!-- Vector type for Chunk embeddings. Tiny package (value type only);
+         EF integration (Pgvector.EntityFrameworkCore) stays in Infrastructure. -->
     <PackageReference Include="Pgvector" Version="0.3.2" />
   </ItemGroup>
 

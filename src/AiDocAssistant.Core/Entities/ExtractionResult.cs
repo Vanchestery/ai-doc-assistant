@@ -6,13 +6,13 @@ public class ExtractionResult
     public Guid DocumentId { get; set; }
     public Document Document { get; set; } = null!;
 
-    /// <summary>Извлечённые поля документа (jsonb).</summary>
+    /// <summary>Extracted document fields (jsonb).</summary>
     public string Json { get; set; } = null!;
 
-    /// <summary>Самооценка модели 0..1, из поля confidence в ответе.</summary>
+    /// <summary>Model self-score 0..1, from the confidence field in the response.</summary>
     public double? Confidence { get; set; }
 
-    // Телеметрия вызова LLM — база для метрик стоимости в Фазе 4
+    // LLM call telemetry — basis for cost metrics in Phase 4
     public string Model { get; set; } = null!;
     public int PromptTokens { get; set; }
     public int CompletionTokens { get; set; }

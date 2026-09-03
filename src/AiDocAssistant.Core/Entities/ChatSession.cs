@@ -1,6 +1,6 @@
 namespace AiDocAssistant.Core.Entities;
 
-/// <summary>Диалог пользователя с ассистентом по документам (Фаза 2 RAG).</summary>
+/// <summary>User conversation with the assistant over documents (Phase 2 RAG).</summary>
 public class ChatSession
 {
     public Guid Id { get; set; }

@@ -7,16 +7,16 @@ public class Document
     public string ContentType { get; set; } = null!;
     public long SizeBytes { get; set; }
 
-    /// <summary>Относительный путь в файловом хранилище (IFileStorage).</summary>
+    /// <summary>Relative path in file storage (IFileStorage).</summary>
     public string StoragePath { get; set; } = null!;
 
     public DocumentStatus Status { get; set; }
     public string? Error { get; set; }
 
-    /// <summary>Извлечённый текст документа. Понадобится для RAG в Фазе 2.</summary>
+    /// <summary>Extracted document text. Needed for RAG in Phase 2.</summary>
     public string? ExtractedText { get; set; }
 
-    /// <summary>Текст получен через OCR (скан), а не из текстового слоя.</summary>
+    /// <summary>Text came from OCR (scan), not from a text layer.</summary>
     public bool UsedOcr { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }

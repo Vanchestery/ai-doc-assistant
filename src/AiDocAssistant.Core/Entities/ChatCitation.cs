@@ -1,6 +1,6 @@
 namespace AiDocAssistant.Core.Entities;
 
-/// <summary>Цитата источника в ответе RAG — какой документ и фрагмент использованы.</summary>
+/// <summary>Source citation in a RAG answer — which document and fragment were used.</summary>
 public sealed record ChatCitation(
     Guid DocumentId,
     string DocumentFileName,

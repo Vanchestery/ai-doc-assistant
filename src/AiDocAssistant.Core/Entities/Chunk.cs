@@ -3,23 +3,23 @@ using Pgvector;
 namespace AiDocAssistant.Core.Entities;
 
 /// <summary>
-/// Фрагмент документа для RAG: текст + его эмбеддинг (вектор в pgvector).
-/// Ordinal — порядковый номер чанка внутри документа, нужен для цитат в ответе.
+/// Document fragment for RAG: text plus its embedding (vector in pgvector).
+/// Ordinal is the chunk index within the document, used for citations in the answer.
 /// </summary>
 public class Chunk
 {
     public Guid Id { get; set; }
     public Guid DocumentId { get; set; }
 
-    /// <summary>Порядковый номер чанка в документе (0,1,2...).</summary>
+    /// <summary>Ordinal of the chunk in the document (0, 1, 2...).</summary>
     public int Ordinal { get; set; }
 
     public string Text { get; set; } = null!;
 
-    /// <summary>Эмбеддинг текста. Тип Vector маппится в колонку vector(N) pgvector.</summary>
+    /// <summary>Text embedding. The Vector type maps to a pgvector vector(N) column.</summary>
     public Vector Embedding { get; set; } = null!;
 
-    /// <summary>Номер страницы источника. Пока null (текст извлекается плоско) — задел на будущее.</summary>
+    /// <summary>Source page number. Null for now (text is extracted flat) — reserved for later.</summary>
     public int? PageNumber { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }

@@ -1,6 +1,6 @@
 namespace AiDocAssistant.Core.Entities;
 
-/// <summary>Телеметрия одного LLM-вызова (Фаза 4).</summary>
+/// <summary>Telemetry for a single LLM call (Phase 4).</summary>
 public class LlmUsageEvent
 {
     public Guid Id { get; set; }
