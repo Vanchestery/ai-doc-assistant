@@ -27,10 +27,6 @@ public class DeepSeekLlmProvider : ILlmProvider
         _options = options.Value;
         _logger = logger;
 
-        if (string.IsNullOrWhiteSpace(_options.ApiKey))
-            throw new InvalidOperationException(
-                "DeepSeek:ApiKey is not set. Set it via user-secrets or the DeepSeek__ApiKey environment variable.");
-
         _http = http;
         _http.BaseAddress = new Uri(_options.BaseUrl);
         _http.DefaultRequestHeaders.Authorization =
@@ -40,6 +36,10 @@ public class DeepSeekLlmProvider : ILlmProvider
 
     public async Task<LlmCompletion> CompleteAsync(LlmRequest request, CancellationToken ct = default)
     {
+        if (string.IsNullOrWhiteSpace(_options.ApiKey))
+            throw new InvalidOperationException(
+                "DeepSeek:ApiKey is not set. Set it via user-secrets or the DeepSeek__ApiKey environment variable.");
+
         var body = new ChatCompletionRequest
         {
             Model = _options.Model,
