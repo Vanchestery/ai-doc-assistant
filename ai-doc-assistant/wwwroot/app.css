@@ -58,3 +58,155 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+:root {
+    --bg: #f4f6f8;
+    --surface: #ffffff;
+    --text: #1a1f2e;
+    --muted: #5c6578;
+    --border: #d8dee8;
+    --primary: #2563eb;
+    --success: #15803d;
+    --warning: #b45309;
+    --danger: #b91c1c;
+    --radius: 12px;
+    --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 1rem;
+}
+
+.card h2 {
+    margin-top: 0;
+    font-size: 1.05rem;
+}
+
+.muted {
+    color: var(--muted);
+}
+
+.status.info {
+    color: var(--primary);
+}
+
+.status.error {
+    color: var(--danger);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    text-align: left;
+    padding: 0.75rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.data-table tr.clickable {
+    cursor: pointer;
+}
+
+.data-table tr.clickable:hover {
+    background: #f8fafc;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.badge.success { background: #dcfce7; color: var(--success); }
+.badge.warning { background: #fef3c7; color: var(--warning); }
+.badge.danger { background: #fee2e2; color: var(--danger); }
+.badge.neutral { background: #e2e8f0; color: var(--muted); }
+
+.upload-card input[type="file"] {
+    margin-top: 0.5rem;
+}
+
+.upload-card form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.upload-card .btn-primary {
+    background: var(--primary);
+    color: #fff;
+}
+
+.path-input {
+    min-width: 22rem;
+    max-width: 100%;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    color: var(--muted);
+}
+
+.meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 0.25rem;
+}
+
+.json-block {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 1rem;
+    border-radius: 8px;
+    overflow: auto;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.btn {
+    display: inline-block;
+    padding: 0.55rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+}
+
+.card .btn-secondary {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+}

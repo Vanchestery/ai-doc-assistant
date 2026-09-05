@@ -1,0 +1,108 @@
+@page "/documents/{Id:guid}"
+@inject DocumentProcessingService DocumentService
+
+<PageTitle>@(_document?.FileName ?? "Document") — ai-doc-assistant</PageTitle>
+
+@if (_loading)
+{
+    <p class="muted">Loading…</p>
+}
+else if (_document is null)
+{
+    <p class="status error">Document not found.</p>
+    <a class="btn btn-secondary" href="/documents">← Back to list</a>
+}
+else
+{
+    <div class="page-header">
+        <div>
+            <a class="back-link" href="/documents">← Documents</a>
+            <h1>@_document.FileName</h1>
+        </div>
+        <span class="badge @StatusClass(_document.Status)">@_document.Status</span>
+    </div>
+
+    <section class="card meta-grid">
+        <div><span class="label">ID</span><code>@_document.Id</code></div>
+        <div><span class="label">Size</span>@FormatSize(_document.SizeBytes)</div>
+        <div><span class="label">OCR</span>@(_document.UsedOcr ? "yes" : "no")</div>
+        <div><span class="label">Created</span>@_document.CreatedAt.ToLocalTime().ToString("G")</div>
+    </section>
+
+    @if (!string.IsNullOrEmpty(_document.Error))
+    {
+        <section class="card">
+            <h2>Error</h2>
+            <p class="status error">@_document.Error</p>
+        </section>
+    }
+
+    @if (_document.Extraction is not null)
+    {
+        <section class="card">
+            <h2>Extraction JSON</h2>
+            <p class="muted">
+                Model: @_document.Extraction.Model ·
+                confidence: @(_document.Extraction.Confidence?.ToString("0.##") ?? "—") ·
+                tokens: @_document.Extraction.PromptTokens + @_document.Extraction.CompletionTokens
+            </p>
+            <pre class="json-block">@FormatJson(_document.Extraction.Json)</pre>
+        </section>
+    }
+}
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private DocumentDetailDto? _document;
+    private bool _loading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        try
+        {
+            _document = await DocumentService.GetByIdAsync(Id);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string FormatSize(long bytes) =>
+        bytes switch
+        {
+            var size when size < 1024 => $"{size} B",
+            var size when size < 1024 * 1024 => $"{size / 1024.0:0.#} KB",
+            var size => $"{size / (1024.0 * 1024.0):0.#} MB"
+        };
+
+    private static string StatusClass(string status) => status.ToLowerInvariant() switch
+    {
+        "extracted" => "success",
+        "failed" => "danger",
+        "parsed" => "warning",
+        _ => "neutral"
+    };
+
+    private static string FormatJson(string json)
+    {
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(json);
+            return System.Text.Json.JsonSerializer.Serialize(
+                doc,
+                new System.Text.Json.JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                });
+        }
+        catch
+        {
+            return json;
+        }
+    }
+}
