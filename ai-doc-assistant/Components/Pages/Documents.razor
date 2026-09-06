@@ -7,7 +7,7 @@
 
 <section class="card upload-card">
     <h2>Upload</h2>
-    <p class="muted">PDF or image — parse, OCR if needed, then LLM extraction. After submit, wait for DeepSeek.</p>
+    <p class="muted">PDF or image — parse, OCR if needed, then LLM extraction and RAG index. After submit, wait for DeepSeek (and Ollama if indexing).</p>
 
     <form method="post" action="/documents/upload" enctype="multipart/form-data">
         <input type="file" name="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.tif,.tiff" required />

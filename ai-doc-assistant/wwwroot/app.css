@@ -210,3 +210,114 @@ h1:focus {
     color: var(--text);
     border: 1px solid var(--border);
 }
+
+.field-label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+}
+
+.select-input,
+.chat-input {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.65rem 0.75rem;
+    font: inherit;
+    background: white;
+}
+
+.chat-toolbar {
+    margin-bottom: 1rem;
+}
+
+.chat-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 420px;
+}
+
+.chat-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    max-height: 55vh;
+    overflow: auto;
+    padding-right: 0.25rem;
+}
+
+.chat-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+.chat-message {
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--border);
+}
+
+.chat-message.user {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+.chat-message.assistant {
+    background: #f8fafc;
+}
+
+.chat-role {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+}
+
+.chat-content {
+    white-space: pre-wrap;
+}
+
+.chat-meta {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.citations {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.citations-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--muted);
+}
+
+.citation-item {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.6rem 0.75rem;
+}
+
+.citation-meta {
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.citation-excerpt {
+    font-size: 0.85rem;
+    color: var(--text);
+}
+
+.chat-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+}

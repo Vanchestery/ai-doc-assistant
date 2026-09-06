@@ -15,6 +15,7 @@ public sealed class DocumentProcessingService
     private readonly IFileStorage _storage;
     private readonly CompositeDocumentParser _parser;
     private readonly DocumentExtractionService _extraction;
+    private readonly DocumentIndexingService _indexing;
     private readonly ILogger<DocumentProcessingService> _logger;
 
     public DocumentProcessingService(
@@ -22,12 +23,14 @@ public sealed class DocumentProcessingService
         IFileStorage storage,
         CompositeDocumentParser parser,
         DocumentExtractionService extraction,
+        DocumentIndexingService indexing,
         ILogger<DocumentProcessingService> logger)
     {
         _db = db;
         _storage = storage;
         _parser = parser;
         _extraction = extraction;
+        _indexing = indexing;
         _logger = logger;
     }
 
@@ -106,6 +109,18 @@ public sealed class DocumentProcessingService
             });
             document.Status = DocumentStatus.Extracted;
             await _db.SaveChangesAsync(ct);
+
+            // RAG indexing is best-effort. If the embedder is down (Ollama not running),
+            // keep the extraction and index later.
+            try
+            {
+                var indexed = await _indexing.IndexAsync(document.Id, parsed.Text, ct);
+                _logger.LogInformation("Document {Id}: indexed {Count} chunks", document.Id, indexed);
+            }
+            catch (Exception ie) when (ie is not OperationCanceledException)
+            {
+                _logger.LogWarning(ie, "Indexing document {Id} failed (is the embedder running?)", document.Id);
+            }
         }
         catch (Exception e) when (e is not OperationCanceledException)
         {

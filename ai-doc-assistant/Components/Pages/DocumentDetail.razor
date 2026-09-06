@@ -19,7 +19,13 @@ else
             <a class="back-link" href="/documents">← Documents</a>
             <h1>@_document.FileName</h1>
         </div>
-        <span class="badge @StatusClass(_document.Status)">@_document.Status</span>
+        <div>
+            @if (_document.Status.Equals("Extracted", StringComparison.OrdinalIgnoreCase))
+            {
+                <a class="btn btn-secondary" href="/chat?documentId=@_document.Id">Ask about this document</a>
+            }
+            <span class="badge @StatusClass(_document.Status)">@_document.Status</span>
+        </div>
     </div>
 
     <section class="card meta-grid">
