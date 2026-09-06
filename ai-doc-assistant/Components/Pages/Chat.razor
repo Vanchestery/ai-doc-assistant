@@ -1,0 +1,183 @@
+@page "/chat"
+@page "/chat/{SessionId:guid}"
+@using System.Text.Json
+@using AiDocAssistant.Core.Abstractions
+@using AiDocAssistant.Core.Entities
+@inject IChatSessionStore Sessions
+@inject DocumentProcessingService Documents
+@inject NavigationManager Navigation
+
+<PageTitle>Chat — ai-doc-assistant</PageTitle>
+
+@if (_bootstrapping)
+{
+    <p class="muted">Creating session…</p>
+}
+else if (_session is null)
+{
+    <p class="status error">Session not found.</p>
+    <a class="btn btn-secondary" href="/chat">New chat</a>
+}
+else
+{
+    <div class="page-header">
+        <div>
+            <h1>RAG chat</h1>
+            <p class="muted">Questions over indexed documents, with citations.</p>
+        </div>
+        <a class="btn btn-secondary" href="@NewChatHref">New chat</a>
+    </div>
+
+    <form method="post" action="/chat/@_session.Id/ask">
+        <section class="card chat-toolbar">
+            <label class="field-label" for="document-filter">Limit search to one document</label>
+            <select id="document-filter" class="select-input" name="documentId">
+                <option value="">All documents</option>
+                @foreach (var doc in _documents)
+                {
+                    if (IsSelected(doc.Id))
+                    {
+                        <option value="@doc.Id" selected>@doc.FileName</option>
+                    }
+                    else
+                    {
+                        <option value="@doc.Id">@doc.FileName</option>
+                    }
+                }
+            </select>
+            @if (_documents.Count == 0)
+            {
+                <p class="muted">Upload documents first — chat needs an index.</p>
+            }
+        </section>
+
+        <section class="card chat-panel">
+            <div class="chat-messages">
+                @if (_session.Messages.Count == 0)
+                {
+                    <p class="muted chat-empty">Ask a question, e.g. “What is the invoice total?”</p>
+                }
+
+                @foreach (var message in _session.Messages.OrderBy(m => m.CreatedAt))
+                {
+                    var citations = ParseCitations(message.CitationsJson);
+                    <article class="chat-message @RoleClass(message.Role)">
+                        <div class="chat-role">@RoleLabel(message.Role)</div>
+                        <div class="chat-content">@message.Content</div>
+                        @if (citations.Count > 0)
+                        {
+                            <div class="citations">
+                                <div class="citations-title">Citations</div>
+                                @foreach (var citation in citations)
+                                {
+                                    <div class="citation-item">
+                                        <div class="citation-meta">
+                                            <a href="/documents/@citation.DocumentId">@citation.DocumentFileName</a>
+                                            · fragment #@citation.ChunkOrdinal
+                                            · dist @citation.Distance.ToString("0.###")
+                                        </div>
+                                        <div class="citation-excerpt">@citation.Excerpt</div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        @if (message.Role == ChatRole.Assistant && message.Model is not null)
+                        {
+                            <div class="chat-meta muted">
+                                @message.Model · tokens @((message.PromptTokens ?? 0) + (message.CompletionTokens ?? 0))
+                            </div>
+                        }
+                    </article>
+                }
+            </div>
+
+            @if (!string.IsNullOrEmpty(_error))
+            {
+                <p class="status error">@_error</p>
+            }
+
+            <div class="chat-form">
+                <textarea class="chat-input"
+                          name="question"
+                          placeholder="Your question…"
+                          rows="3"
+                          required></textarea>
+                <button class="btn btn-primary" type="submit">Send</button>
+            </div>
+        </section>
+    </form>
+}
+
+@code {
+    private static readonly JsonSerializerOptions JsonOpts = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
+    [Parameter]
+    public Guid? SessionId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "documentId")]
+    public Guid? DocumentId { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Error { get; set; }
+
+    private ChatSession? _session;
+    private IReadOnlyList<DocumentListItemDto> _documents = [];
+    private bool _bootstrapping = true;
+    private string? _error;
+
+    private string NewChatHref =>
+        DocumentId is null ? "/chat" : $"/chat?documentId={DocumentId}";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _bootstrapping = true;
+        _error = Error;
+
+        try
+        {
+            if (SessionId is null)
+            {
+                var id = await Sessions.CreateSessionAsync();
+                var url = $"/chat/{id}";
+                if (DocumentId is not null)
+                    url += $"?documentId={DocumentId}";
+
+                Navigation.NavigateTo(url, replace: true);
+                return;
+            }
+
+            _documents = (await Documents.GetAllAsync())
+                .Where(d => d.Status.Equals("Extracted", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            _session = await Sessions.GetSessionWithMessagesAsync(SessionId.Value);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _bootstrapping = false;
+        }
+    }
+
+    private bool IsSelected(Guid documentId) => DocumentId == documentId;
+
+    private static string RoleClass(ChatRole role) =>
+        role == ChatRole.User ? "user" : "assistant";
+
+    private static string RoleLabel(ChatRole role) =>
+        role == ChatRole.User ? "You" : "Assistant";
+
+    private static IReadOnlyList<ChatCitation> ParseCitations(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+            return [];
+
+        return JsonSerializer.Deserialize<List<ChatCitation>>(json, JsonOpts) ?? [];
+    }
+}
