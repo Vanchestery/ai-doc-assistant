@@ -11,6 +11,7 @@ public class AppDbContext : DbContext
 
     public DbSet<Document> Documents => Set<Document>();
     public DbSet<ExtractionResult> ExtractionResults => Set<ExtractionResult>();
+    public DbSet<Chunk> Chunks => Set<Chunk>();
 
     /// <summary>
     /// Embedding dimension of the model (bge-m3 = 1024). Changing to a model
@@ -40,6 +41,24 @@ public class AppDbContext : DbContext
             b.HasOne(x => x.Document)
                 .WithOne(x => x.Extraction)
                 .HasForeignKey<ExtractionResult>(x => x.DocumentId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Chunk>(b =>
+        {
+            b.Property(x => x.Text).HasColumnType("text");
+            b.Property(x => x.Embedding).HasColumnType($"vector({EmbeddingDimensions})");
+
+            // HNSW index with the cosine operator — fast ANN nearest-vector search.
+            b.HasIndex(x => x.Embedding)
+                .HasMethod("hnsw")
+                .HasOperators("vector_cosine_ops");
+
+            b.HasIndex(x => x.DocumentId);
+
+            b.HasOne<Document>()
+                .WithMany()
+                .HasForeignKey(x => x.DocumentId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
