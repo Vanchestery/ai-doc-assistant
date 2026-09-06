@@ -12,6 +12,8 @@ public class AppDbContext : DbContext
     public DbSet<Document> Documents => Set<Document>();
     public DbSet<ExtractionResult> ExtractionResults => Set<ExtractionResult>();
     public DbSet<Chunk> Chunks => Set<Chunk>();
+    public DbSet<ChatSession> ChatSessions => Set<ChatSession>();
+    public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
 
     /// <summary>
     /// Embedding dimension of the model (bge-m3 = 1024). Changing to a model
@@ -59,6 +61,25 @@ public class AppDbContext : DbContext
             b.HasOne<Document>()
                 .WithMany()
                 .HasForeignKey(x => x.DocumentId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ChatSession>(b =>
+        {
+            b.HasIndex(x => x.CreatedAt);
+        });
+
+        modelBuilder.Entity<ChatMessage>(b =>
+        {
+            b.Property(x => x.Content).HasColumnType("text");
+            b.Property(x => x.CitationsJson).HasColumnType("jsonb");
+            b.Property(x => x.Model).HasMaxLength(200);
+            b.HasIndex(x => x.SessionId);
+            b.HasIndex(x => x.CreatedAt);
+
+            b.HasOne(x => x.Session)
+                .WithMany(x => x.Messages)
+                .HasForeignKey(x => x.SessionId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
