@@ -14,6 +14,7 @@ public class AppDbContext : DbContext
     public DbSet<Chunk> Chunks => Set<Chunk>();
     public DbSet<ChatSession> ChatSessions => Set<ChatSession>();
     public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
+    public DbSet<AgentAction> AgentActions => Set<AgentAction>();
 
     /// <summary>
     /// Embedding dimension of the model (bge-m3 = 1024). Changing to a model
@@ -81,6 +82,15 @@ public class AppDbContext : DbContext
                 .WithMany(x => x.Messages)
                 .HasForeignKey(x => x.SessionId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<AgentAction>(b =>
+        {
+            b.Property(x => x.Tool).HasMaxLength(100);
+            b.Property(x => x.InputJson).HasColumnType("jsonb");
+            b.Property(x => x.ResultJson).HasColumnType("jsonb");
+            b.HasIndex(x => x.CreatedAt);
+            b.HasIndex(x => x.Status);
         });
 
         base.OnModelCreating(modelBuilder);
