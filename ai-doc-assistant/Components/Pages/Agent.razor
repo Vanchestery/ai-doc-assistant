@@ -1,0 +1,210 @@
+@page "/agent"
+@page "/agent/{TaskId:guid}"
+@using System.Text.Json
+@using AiDocAssistant.Core.Agent
+@using AiDocAssistant.Core.Entities
+@using AiDocAssistant.Core.Services
+@inject DocumentProcessingService Documents
+@inject AgentTaskService Tasks
+@inject AgentToolRegistry Tools
+
+<PageTitle>Agent — ai-doc-assistant</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1>Agent</h1>
+        <p class="muted">Reconcile, summarize, or Excel report — explicit tool or goal mode (LLM picks the tool).</p>
+    </div>
+    <a class="btn btn-secondary" href="/agent">New run</a>
+</div>
+
+@if (!string.IsNullOrEmpty(_error))
+{
+    <p class="status error">@_error</p>
+}
+
+<form method="post" action="/agent/run">
+    <section class="card">
+        <div class="mode-switch">
+            <label class="mode-option">
+                <input type="radio" name="mode" value="tool" checked />
+                Explicit tool
+            </label>
+            <label class="mode-option">
+                <input type="radio" name="mode" value="goal" />
+                Goal mode
+            </label>
+        </div>
+
+        <label class="field-label" for="agent-tool">Tool</label>
+        <select id="agent-tool" class="select-input" name="tool">
+            @foreach (var tool in _tools)
+            {
+                <option value="@tool">@ToolLabel(tool)</option>
+            }
+        </select>
+
+        <label class="field-label" for="agent-goal">Goal</label>
+        <textarea id="agent-goal" class="chat-input" name="goal" rows="3"
+                  placeholder="e.g. compare these invoices and show the differences"></textarea>
+    </section>
+
+    <section class="card">
+        <h2>Documents</h2>
+        @if (_documents.Count == 0)
+        {
+            <p class="muted">No Extracted documents yet — upload a PDF first.</p>
+        }
+        else
+        {
+            <div class="doc-checklist">
+                @foreach (var doc in _documents)
+                {
+                    <label class="doc-check">
+                        <input type="checkbox" name="documentIds" value="@doc.Id" />
+                        <span>@doc.FileName</span>
+                        <span class="muted">@doc.CreatedAt.ToLocalTime().ToString("g")</span>
+                    </label>
+                }
+            </div>
+            <p class="muted">reconcile needs at least 2 documents.</p>
+        }
+    </section>
+
+    <section class="card">
+        <button class="btn btn-primary" type="submit">Run</button>
+    </section>
+</form>
+
+@if (_task is not null)
+{
+    var goal = ReadGoal(_task.InputJson);
+
+    @if (goal is not null)
+    {
+        <section class="card">
+            <h2>Goal mode</h2>
+            <p class="muted">
+                Selected tool: <strong>@ToolLabel(_task.Tool)</strong>
+                @if (!string.IsNullOrEmpty(goal.RoutingReason))
+                {
+                    <text> · @goal.RoutingReason</text>
+                }
+            </p>
+            <p>@goal.Goal</p>
+        </section>
+    }
+
+    <section class="card">
+        <div class="page-header">
+            <h2>Result</h2>
+            <span class="badge @StatusClass(_task.Status.ToString())">@_task.Status</span>
+        </div>
+        <p class="muted">
+            Task @_task.Id · tool: @ToolLabel(_task.Tool) ·
+            @_task.CreatedAt.ToLocalTime().ToString("G")
+        </p>
+
+        @if (!string.IsNullOrEmpty(_task.Error))
+        {
+            <p class="status error">@_task.Error</p>
+        }
+
+        @if (_task.Tool == AgentToolNames.GenerateReport
+             && _task.Status == AgentActionStatus.Completed)
+        {
+            <a class="btn btn-primary" href="/api/agent/tasks/@_task.Id/report">Download Excel</a>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(_task.ResultJson))
+        {
+            <h3>Result JSON</h3>
+            <pre class="json-block">@FormatJson(_task.ResultJson)</pre>
+        }
+    </section>
+}
+
+@code {
+    [Parameter]
+    public Guid? TaskId { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Error { get; set; }
+
+    private IReadOnlyList<DocumentListItemDto> _documents = [];
+    private IReadOnlyList<string> _tools = [];
+    private AgentAction? _task;
+    private string? _error;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _error = Error;
+        _tools = Tools.Names.OrderBy(n => n).ToList();
+        _documents = (await Documents.GetAllAsync())
+            .Where(d => d.Status.Equals("Extracted", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        if (TaskId is not null)
+            _task = await Tasks.GetAsync(TaskId.Value);
+    }
+
+    private static string ToolLabel(string tool) => tool switch
+    {
+        AgentToolNames.Reconcile => "reconcile — compare fields",
+        AgentToolNames.Summarize => "summarize — short summary",
+        AgentToolNames.GenerateReport => "generate_report — Excel",
+        _ => tool
+    };
+
+    private static string StatusClass(string status) => status.ToLowerInvariant() switch
+    {
+        "completed" => "success",
+        "failed" => "danger",
+        _ => "warning"
+    };
+
+    private static GoalHint? ReadGoal(string inputJson)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(inputJson);
+            if (!doc.RootElement.TryGetProperty("goal", out var goalEl))
+                return null;
+
+            var goal = goalEl.GetString();
+            if (string.IsNullOrWhiteSpace(goal))
+                return null;
+
+            var reason = doc.RootElement.TryGetProperty("routingReason", out var reasonEl)
+                ? reasonEl.GetString()
+                : null;
+
+            return new GoalHint(goal, reason);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    private static string FormatJson(string json)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            return JsonSerializer.Serialize(
+                doc,
+                new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                });
+        }
+        catch
+        {
+            return json;
+        }
+    }
+
+    private sealed record GoalHint(string Goal, string? RoutingReason);
+}
