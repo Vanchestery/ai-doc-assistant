@@ -1,0 +1,13 @@
+{
+  "doc_type": "счет",
+  "number": "2026-041",
+  "date": "2026-07-15",
+  "counterparty": { "name": "OOO «KofePoint»", "inn": "7707654321" },
+  "items": [
+    { "name": "Espresso", "quantity": 120, "unit": "шт", "unit_price": 320.0, "amount": 38400.0 }
+  ],
+  "total_amount": 115000.0,
+  "vat_amount": 19166.67,
+  "currency": "RUB",
+  "confidence": 0.89
+}

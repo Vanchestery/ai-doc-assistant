@@ -9,6 +9,7 @@ using AiDocAssistant.Infrastructure.Persistence;
 using AiDocAssistant.Infrastructure.Reports;
 using AiDocAssistant.Infrastructure.Storage;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Pgvector.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +23,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<DocumentsApiClient>();
 builder.Services.AddScoped<ChatApiClient>();
 builder.Services.AddScoped<AgentApiClient>();
+builder.Services.AddScoped<MetricsApiClient>();
 builder.Services.AddScoped<DocumentProcessingService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -46,7 +48,15 @@ builder.Services.AddScoped<IDocumentParser, PdfDocumentParser>();
 builder.Services.AddScoped<IDocumentParser, ImageDocumentParser>();
 builder.Services.AddScoped<CompositeDocumentParser>();
 
-builder.Services.AddHttpClient<ILlmProvider, DeepSeekLlmProvider>();
+builder.Services.Configure<LlmPricingOptions>(builder.Configuration.GetSection(LlmPricingOptions.SectionName));
+builder.Services.AddSingleton<LlmCostEstimator>(sp =>
+    new LlmCostEstimator(sp.GetRequiredService<IOptions<LlmPricingOptions>>().Value));
+builder.Services.AddHttpClient<DeepSeekLlmProvider>();
+builder.Services.AddScoped<ILlmUsageStore, EfLlmUsageStore>();
+builder.Services.AddScoped<ILlmProvider>(sp => new MeteringLlmProvider(
+    sp.GetRequiredService<DeepSeekLlmProvider>(),
+    sp.GetRequiredService<ILlmUsageStore>(),
+    sp.GetRequiredService<LlmCostEstimator>()));
 builder.Services.AddScoped<DocumentExtractionService>();
 
 builder.Services.AddSingleton<ITextChunker, RecursiveTextChunker>();
@@ -69,6 +79,10 @@ builder.Services.AddScoped<AgentToolRegistry>();
 builder.Services.AddScoped<AgentGoalRouterService>();
 builder.Services.AddScoped<AgentGoalService>();
 builder.Services.AddScoped<AgentTaskService>();
+
+builder.Services.AddScoped<IDataCountsProvider, EfDataCountsProvider>();
+builder.Services.AddSingleton<EvalSuiteService>();
+builder.Services.AddScoped<MetricsService>();
 
 var app = builder.Build();
 
