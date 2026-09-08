@@ -15,6 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<ChatSession> ChatSessions => Set<ChatSession>();
     public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
     public DbSet<AgentAction> AgentActions => Set<AgentAction>();
+    public DbSet<LlmUsageEvent> LlmUsageEvents => Set<LlmUsageEvent>();
 
     /// <summary>
     /// Embedding dimension of the model (bge-m3 = 1024). Changing to a model
@@ -91,6 +92,15 @@ public class AppDbContext : DbContext
             b.Property(x => x.ResultJson).HasColumnType("jsonb");
             b.HasIndex(x => x.CreatedAt);
             b.HasIndex(x => x.Status);
+        });
+
+        modelBuilder.Entity<LlmUsageEvent>(b =>
+        {
+            b.Property(x => x.Operation).HasMaxLength(100);
+            b.Property(x => x.Model).HasMaxLength(200);
+            b.Property(x => x.EstimatedCostUsd).HasPrecision(18, 8);
+            b.HasIndex(x => x.CreatedAt);
+            b.HasIndex(x => x.Operation);
         });
 
         base.OnModelCreating(modelBuilder);
