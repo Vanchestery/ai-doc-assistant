@@ -1,0 +1,13 @@
+{
+  "doc_type": "счет",
+  "number": "2026-041",
+  "date": "2026-07-15",
+  "counterparty": { "name": "ООО KofePoint", "inn": "7707654321" },
+  "items": [
+    { "name": "Кофе Arabika", "quantity": 40, "unit": "кг", "unit_price": 1250.0, "amount": 50000.0 }
+  ],
+  "total_amount": 112700.0,
+  "vat_amount": 18783.33,
+  "currency": "RUB",
+  "confidence": 0.91
+}
