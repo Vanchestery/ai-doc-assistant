@@ -368,6 +368,7 @@ FodyWeavers.xsd
 !.env.example
 secrets/
 **/secrets.json
+.cursor/mcp.json
 
 # Local file storage (uploaded documents)
 uploads/
