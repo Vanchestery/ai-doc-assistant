@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "aidoc-assistant": {
+      "command": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "src/AiDocAssistant.Mcp/AiDocAssistant.Mcp.csproj"
+      ],
+      "env": {
+        "DeepSeek__ApiKey": "sk-your-key-here",
+        "ConnectionStrings__Default": "Host=localhost;Port=5432;Database=aidoc;Username=aidoc;Password=aidoc_dev_password",
+        "Storage__Root": "ai-doc-assistant/uploads"
+      }
+    }
+  }
+}
