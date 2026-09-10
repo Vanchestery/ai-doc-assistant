@@ -13,7 +13,7 @@
 <div class="page-header">
     <div>
         <h1>Agent</h1>
-        <p class="muted">Reconcile, summarize, or Excel report — explicit tool or goal mode (LLM picks the tool).</p>
+        <p class="muted">Describe the goal in plain language — the LLM picks the tool. Or switch to an explicit tool.</p>
     </div>
     <a class="btn btn-secondary" href="/agent">New run</a>
 </div>
@@ -24,29 +24,29 @@
 }
 
 <form method="post" action="/agent/run">
-    <section class="card">
+    <section class="card agent-goal-card">
         <div class="mode-switch">
             <label class="mode-option">
-                <input type="radio" name="mode" value="tool" checked />
-                Explicit tool
+                <input type="radio" name="mode" value="goal" checked />
+                Goal mode
             </label>
             <label class="mode-option">
-                <input type="radio" name="mode" value="goal" />
-                Goal mode
+                <input type="radio" name="mode" value="tool" />
+                Explicit tool
             </label>
         </div>
 
-        <label class="field-label" for="agent-tool">Tool</label>
+        <label class="field-label" for="agent-goal">What should the agent do?</label>
+        <textarea id="agent-goal" class="chat-input agent-goal-input" name="goal" rows="4"
+                  placeholder="e.g. compare these invoices and show the differences"></textarea>
+
+        <label class="field-label" for="agent-tool">Tool (only for explicit mode)</label>
         <select id="agent-tool" class="select-input" name="tool">
             @foreach (var tool in _tools)
             {
                 <option value="@tool">@ToolLabel(tool)</option>
             }
         </select>
-
-        <label class="field-label" for="agent-goal">Goal</label>
-        <textarea id="agent-goal" class="chat-input" name="goal" rows="3"
-                  placeholder="e.g. compare these invoices and show the differences"></textarea>
     </section>
 
     <section class="card">
@@ -72,7 +72,7 @@
     </section>
 
     <section class="card">
-        <button class="btn btn-primary" type="submit">Run</button>
+        <button class="btn btn-primary" type="submit">Ask the agent</button>
     </section>
 </form>
 
