@@ -83,6 +83,10 @@ builder.Services.AddScoped<AgentTaskService>();
 builder.Services.AddScoped<IDataCountsProvider, EfDataCountsProvider>();
 builder.Services.AddSingleton<EvalSuiteService>();
 builder.Services.AddScoped<MetricsService>();
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<AppDbContext>("database");
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
@@ -105,8 +109,13 @@ app.UseHttpsRedirection();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+app.UseSwagger();
+app.UseSwaggerUI();
 app.MapControllers();
+app.MapHealthChecks("/health");
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
+
+public partial class Program;
