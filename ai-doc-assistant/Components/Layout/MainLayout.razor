@@ -1,18 +1,13 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
 
-<div class="page">
-    <div class="sidebar">
+<div class="app-shell @(IsHome ? "app-shell--home" : null)">
+    <header class="app-header">
+        <a class="brand" href="/">ai-doc-assistant</a>
         <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
+    </header>
+    <main class="app-main @(IsHome ? "app-main--home" : null)">
+        @Body
     </main>
 </div>
 
@@ -21,3 +16,14 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code {
+    private bool IsHome
+    {
+        get
+        {
+            var path = new Uri(Navigation.Uri).AbsolutePath;
+            return path is "/" or "";
+        }
+    }
+}

@@ -1,25 +1,83 @@
 @page "/documents"
 @inject DocumentProcessingService DocumentService
+@inject IWebHostEnvironment Env
 
 <PageTitle>Documents — ai-doc-assistant</PageTitle>
 
-<h1>Documents</h1>
+<div class="page-header">
+    <div>
+        <h1>Documents</h1>
+        <p class="muted">Upload, extract, and open any invoice for fields, chat, or agent tools.</p>
+    </div>
+</div>
 
 <section class="card upload-card">
     <h2>Upload</h2>
-    <p class="muted">PDF or image — parse, OCR if needed, then LLM extraction and RAG index. After submit, wait for DeepSeek (and Ollama if indexing).</p>
+    <p class="muted">PDF or image — parse, OCR if needed, then LLM extraction and RAG index.</p>
 
-    <form method="post" action="/documents/upload" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.tif,.tiff" required />
-        <button type="submit" class="btn btn-primary">Upload</button>
+    <form method="post" action="/documents/upload" enctype="multipart/form-data" class="upload-form" id="upload-form">
+        <label class="dropzone" id="dropzone" for="document-file">
+            <input id="document-file"
+                   class="dropzone-input"
+                   type="file"
+                   name="file"
+                   accept=".pdf,.png,.jpg,.jpeg,.webp,.tif,.tiff"
+                   required />
+            <span class="dropzone-icon" aria-hidden="true">↑</span>
+            <span class="dropzone-title">Drop a PDF or image here</span>
+            <span class="dropzone-hint">or click to browse · PDF, PNG, JPG, WEBP, TIFF</span>
+            <span class="dropzone-file" id="dropzone-file">No file selected</span>
+        </label>
+        <button type="submit" class="btn btn-primary upload-submit">Upload &amp; extract</button>
     </form>
 
-    <p class="muted">If Visual Studio dies on the file dialog, paste a local path and use this instead:</p>
-    <form method="post" action="/documents/upload-path">
-        <input type="text" name="path" class="path-input" placeholder="C:\Users\...\invoice.pdf" />
-        <button type="submit" class="btn btn-primary">Upload path</button>
-    </form>
+    @if (Env.IsDevelopment())
+    {
+        <p class="upload-dev-tip">
+            Dev tip: under Visual Studio (F5), prefer <strong>drag-and-drop</strong>.
+            The Browse dialog often kills the debugger (<code>exited -1</code>).
+        </p>
+    }
 </section>
+
+<script>
+(() => {
+    const input = document.getElementById('document-file');
+    const zone = document.getElementById('dropzone');
+    const label = document.getElementById('dropzone-file');
+    if (!input || !zone || !label) return;
+
+    const setName = () => {
+        label.textContent = input.files?.[0]?.name || 'No file selected';
+        zone.classList.toggle('has-file', Boolean(input.files?.length));
+    };
+
+    input.addEventListener('change', setName);
+
+    ['dragenter', 'dragover'].forEach((eventName) => {
+        zone.addEventListener(eventName, (event) => {
+            event.preventDefault();
+            zone.classList.add('is-dragover');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach((eventName) => {
+        zone.addEventListener(eventName, (event) => {
+            event.preventDefault();
+            zone.classList.remove('is-dragover');
+        });
+    });
+
+    zone.addEventListener('drop', (event) => {
+        const files = event.dataTransfer?.files;
+        if (!files?.length) return;
+        const transfer = new DataTransfer();
+        transfer.items.add(files[0]);
+        input.files = transfer.files;
+        setName();
+    });
+})();
+</script>
 
 @if (_documents.Count == 0)
 {
