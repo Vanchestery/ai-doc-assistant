@@ -3,4 +3,5 @@
   <Project Path="src/AiDocAssistant.Core/AiDocAssistant.Core.csproj" />
   <Project Path="src/AiDocAssistant.Infrastructure/AiDocAssistant.Infrastructure.csproj" />
   <Project Path="src/AiDocAssistant.Mcp/AiDocAssistant.Mcp.csproj" />
+  <Project Path="tests/AiDocAssistant.Tests/AiDocAssistant.Tests.csproj" />
 </Solution>
