@@ -16,5 +16,28 @@ services:
       timeout: 3s
       retries: 10
 
+  api:
+    build: .
+    container_name: aidoc-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__Default: "Host=db;Port=5432;Database=aidoc;Username=aidoc;Password=aidoc_dev_password"
+      Storage__Root: /app/uploads
+      # From .env next to compose (not committed)
+      DeepSeek__ApiKey: ${DEEPSEEK_API_KEY:-}
+      # Ollama on host: localhost inside the container is the container itself
+      Embedding__BaseUrl: http://host.docker.internal:11434
+    ports:
+      - "8080:8080"
+    volumes:
+      - uploads:/app/uploads
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   pgdata:
+  uploads:

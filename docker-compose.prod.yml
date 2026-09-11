@@ -1,0 +1,11 @@
+# Production override.
+# Run: docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+
+services:
+  db:
+    restart: unless-stopped
+
+  api:
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
