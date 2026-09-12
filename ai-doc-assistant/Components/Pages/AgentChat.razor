@@ -1,7 +1,6 @@
 @page "/agent/chat"
 @page "/agent/chat/{ThreadId:guid}"
 @using System.Text.Json
-@using AiDocAssistant.Core.Agent
 @using AiDocAssistant.Core.Entities
 @using AiDocAssistant.Core.Services
 @inject DocumentProcessingService Documents
@@ -76,29 +75,12 @@ else
                         else
                         {
                             <div class="chat-content">
-                                <div>
-                                    Tool: <strong>@ToolLabel(turn.Task.Tool)</strong>
-                                    <span class="badge @StatusClass(turn.Task.Status.ToString())">@turn.Task.Status</span>
-                                </div>
-                                @if (!string.IsNullOrWhiteSpace(turn.RoutingReason))
-                                {
-                                    <div class="muted">@turn.RoutingReason</div>
-                                }
-                                @if (!string.IsNullOrEmpty(turn.Task.Error))
-                                {
-                                    <p class="status error">@turn.Task.Error</p>
-                                }
-                                @if (turn.Task.Tool == AgentToolNames.GenerateReport
-                                     && turn.Task.Status == AgentActionStatus.Completed)
-                                {
-                                    <p>
-                                        <a class="btn btn-primary" href="/api/agent/tasks/@turn.Task.Id/report">Download Excel</a>
-                                    </p>
-                                }
-                                @if (!string.IsNullOrWhiteSpace(turn.Task.ResultJson))
-                                {
-                                    <pre class="json-block">@FormatJson(Truncate(turn.Task.ResultJson, 2000))</pre>
-                                }
+                                <AgentChatResultView Tool="@turn.Task.Tool"
+                                                     Status="@turn.Task.Status.ToString()"
+                                                     RoutingReason="@turn.RoutingReason"
+                                                     Error="@turn.Task.Error"
+                                                     TaskId="@turn.Task.Id"
+                                                     Result="@turn.Result" />
                             </div>
                             <div class="chat-meta muted">
                                 Task @turn.Task.Id · @turn.CreatedAt.ToLocalTime().ToString("g")
@@ -170,7 +152,8 @@ else
                     turn.TaskId,
                     turn.CreatedAt,
                     task,
-                    ReadRoutingReason(task?.InputJson)));
+                    ReadRoutingReason(task?.InputJson),
+                    AgentChatResultParser.Parse(task?.Tool ?? "", task?.ResultJson)));
             }
 
             _turns = rendered;
@@ -184,21 +167,6 @@ else
             _bootstrapping = false;
         }
     }
-
-    private static string ToolLabel(string tool) => tool switch
-    {
-        AgentToolNames.Reconcile => "reconcile",
-        AgentToolNames.Summarize => "summarize",
-        AgentToolNames.GenerateReport => "generate_report",
-        _ => tool
-    };
-
-    private static string StatusClass(string status) => status.ToLowerInvariant() switch
-    {
-        "completed" => "success",
-        "failed" => "danger",
-        _ => "warning"
-    };
 
     private static string? ReadRoutingReason(string? inputJson)
     {
@@ -218,32 +186,11 @@ else
         }
     }
 
-    private static string Truncate(string value, int max)
-        => value.Length <= max ? value : value[..max] + "…";
-
-    private static string FormatJson(string json)
-    {
-        try
-        {
-            using var doc = JsonDocument.Parse(json);
-            return JsonSerializer.Serialize(
-                doc,
-                new JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                });
-        }
-        catch
-        {
-            return json;
-        }
-    }
-
     private sealed record TurnVm(
         string Goal,
         Guid TaskId,
         DateTimeOffset CreatedAt,
         AgentAction? Task,
-        string? RoutingReason);
+        string? RoutingReason,
+        AgentChatResultVm Result);
 }

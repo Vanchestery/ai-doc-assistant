@@ -1,0 +1,181 @@
+@using ai_doc_assistant.Services
+@using AiDocAssistant.Core.Agent
+
+<div class="agent-result">
+    <div class="agent-result-head">
+        <span>Tool: <strong>@ToolLabel</strong></span>
+        <span class="badge @StatusClass">@Status</span>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(RoutingReason))
+    {
+        <p class="muted agent-result-reason">@RoutingReason</p>
+    }
+
+    @if (!string.IsNullOrEmpty(Error))
+    {
+        <p class="status error">@Error</p>
+    }
+    else if (Result.Kind == AgentChatResultKind.Reconcile)
+    {
+        @if (!string.IsNullOrWhiteSpace(Result.Headline))
+        {
+            <p class="agent-result-headline">@Result.Headline</p>
+        }
+
+        <p class="@(Result.HasIssues ? "status error" : "status ok")">
+            @(Result.HasIssues
+                ? $"{Result.Discrepancies.Count} discrepancy(ies) found"
+                : "No discrepancies — documents match")
+        </p>
+
+        @if (Result.Discrepancies.Count > 0)
+        {
+            <ul class="agent-discrepancy-list">
+                @foreach (var d in Result.Discrepancies)
+                {
+                    <li class="agent-discrepancy">
+                        <div class="agent-discrepancy-field">@d.Field</div>
+                        @if (!string.IsNullOrWhiteSpace(d.Description))
+                        {
+                            <div>@d.Description</div>
+                        }
+                        @if (d.Values.Count > 0)
+                        {
+                            <ul class="agent-discrepancy-values">
+                                @foreach (var v in d.Values)
+                                {
+                                    <li>@v</li>
+                                }
+                            </ul>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    }
+    else if (Result.Kind == AgentChatResultKind.Summarize)
+    {
+        @if (!string.IsNullOrWhiteSpace(Result.Headline))
+        {
+            <p class="agent-result-headline">@Result.Headline</p>
+        }
+
+        @if (Result.Report is not null)
+        {
+            <p class="muted">
+                @if (Result.Report.DocumentCount is not null)
+                {
+                    <text>@Result.Report.DocumentCount doc(s)</text>
+                }
+                @if (Result.Report.TotalAmountSum is not null)
+                {
+                    <text> · sum @AgentChatMoney.Format(Result.Report.TotalAmountSum)</text>
+                }
+                @if (!string.IsNullOrWhiteSpace(Result.Report.Model))
+                {
+                    <text> · @Result.Report.Model</text>
+                }
+            </p>
+        }
+
+        @if (Result.Documents.Count > 0)
+        {
+            <ul class="agent-doc-briefs">
+                @foreach (var doc in Result.Documents)
+                {
+                    <li>
+                        <strong>@doc.FileName</strong>
+                        @if (!string.IsNullOrWhiteSpace(doc.Number))
+                        {
+                            <text> · № @doc.Number</text>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(doc.Counterparty))
+                        {
+                            <text> · @doc.Counterparty</text>
+                        }
+                        @if (doc.TotalAmount is not null)
+                        {
+                            <text> · @AgentChatMoney.Format(doc.TotalAmount, doc.Currency)</text>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    }
+    else if (Result.Kind == AgentChatResultKind.Report)
+    {
+        @if (!string.IsNullOrWhiteSpace(Result.Headline))
+        {
+            <p class="agent-result-headline">@Result.Headline</p>
+        }
+
+        @if (Result.Report is not null)
+        {
+            <p class="muted">
+                @if (Result.Report.DocumentCount is not null)
+                {
+                    <text>@Result.Report.DocumentCount doc(s)</text>
+                }
+                @if (Result.Report.ItemCount is not null)
+                {
+                    <text> · @Result.Report.ItemCount line item(s)</text>
+                }
+                @if (Result.Report.TotalAmountSum is not null)
+                {
+                    <text> · sum @AgentChatMoney.Format(Result.Report.TotalAmountSum)</text>
+                }
+                @if (Result.Report.Sheets is { Count: > 0 })
+                {
+                    <text> · sheets: @string.Join(", ", Result.Report.Sheets)</text>
+                }
+            </p>
+        }
+
+        @if (Status.Equals("Completed", StringComparison.OrdinalIgnoreCase))
+        {
+            <p>
+                <a class="btn btn-primary" href="/api/agent/tasks/@TaskId/report">Download Excel</a>
+            </p>
+        }
+    }
+    else if (Result.Kind == AgentChatResultKind.Raw && !string.IsNullOrWhiteSpace(Result.RawJson))
+    {
+        <pre class="json-block">@Result.RawJson</pre>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Tool { get; set; } = "";
+
+    [Parameter, EditorRequired]
+    public string Status { get; set; } = "";
+
+    [Parameter]
+    public string? RoutingReason { get; set; }
+
+    [Parameter]
+    public string? Error { get; set; }
+
+    [Parameter]
+    public Guid TaskId { get; set; }
+
+    [Parameter, EditorRequired]
+    public AgentChatResultVm Result { get; set; } = AgentChatResultVm.Empty;
+
+    private string ToolLabel => Tool switch
+    {
+        AgentToolNames.Reconcile => "reconcile",
+        AgentToolNames.Summarize => "summarize",
+        AgentToolNames.GenerateReport => "generate_report",
+        _ => Tool
+    };
+
+    private string StatusClass => Status.ToLowerInvariant() switch
+    {
+        "completed" => "success",
+        "failed" => "danger",
+        _ => "warning"
+    };
+}
