@@ -676,6 +676,71 @@ label[for="agent-tool"] {
     margin: 0;
 }
 
+.agent-result {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.agent-result-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+}
+
+.agent-result-reason {
+    margin: 0;
+}
+
+.agent-result-headline {
+    margin: 0;
+    white-space: pre-wrap;
+    line-height: 1.45;
+}
+
+.status.ok {
+    color: #166534;
+    background: #dcfce7;
+    border: 1px solid #86efac;
+    border-radius: 8px;
+    padding: 0.45rem 0.7rem;
+    margin: 0;
+}
+
+.agent-discrepancy-list,
+.agent-doc-briefs,
+.agent-discrepancy-values {
+    margin: 0;
+    padding-left: 1.1rem;
+}
+
+.agent-discrepancy-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    list-style: none;
+    padding-left: 0;
+}
+
+.agent-discrepancy {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: white;
+    padding: 0.65rem 0.8rem;
+}
+
+.agent-discrepancy-field {
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.agent-doc-briefs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
 .metrics-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

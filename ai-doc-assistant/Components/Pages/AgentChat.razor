@@ -1,0 +1,196 @@
+@page "/agent/chat"
+@page "/agent/chat/{ThreadId:guid}"
+@using System.Text.Json
+@using AiDocAssistant.Core.Entities
+@using AiDocAssistant.Core.Services
+@inject DocumentProcessingService Documents
+@inject AgentTaskService Tasks
+@inject AgentChatThreadStore Threads
+@inject NavigationManager Navigation
+
+<PageTitle>Agent chat — ai-doc-assistant</PageTitle>
+
+@if (_bootstrapping)
+{
+    <p class="muted">Starting chat…</p>
+}
+else if (ThreadId is null || !_threadOk)
+{
+    <p class="status error">Thread not found.</p>
+    <a class="btn btn-secondary" href="/agent/chat">New chat</a>
+}
+else
+{
+    <div class="page-header">
+        <div>
+            <h1>Agent chat</h1>
+            <p class="muted">One message → one tool run. The goal router picks reconcile, summarize, or Excel report.</p>
+        </div>
+        <a class="btn btn-secondary" href="/agent/chat">New chat</a>
+    </div>
+
+    <form method="post" action="/agent/chat/@ThreadId/ask">
+        <section class="card chat-toolbar">
+            <h2>Documents</h2>
+            @if (_documents.Count == 0)
+            {
+                <p class="muted">No Extracted documents yet — upload a PDF first.</p>
+            }
+            else
+            {
+                <div class="doc-checklist">
+                    @foreach (var doc in _documents)
+                    {
+                        <label class="doc-check">
+                            <input type="checkbox" name="documentIds" value="@doc.Id" />
+                            <span>@doc.FileName</span>
+                            <span class="muted">@doc.CreatedAt.ToLocalTime().ToString("g")</span>
+                        </label>
+                    }
+                </div>
+                <p class="muted">reconcile needs at least 2 documents.</p>
+            }
+        </section>
+
+        <section class="card chat-panel">
+            <div class="chat-messages">
+                @if (_turns.Count == 0)
+                {
+                    <p class="muted chat-empty">e.g. “Compare these invoices and show the differences”</p>
+                }
+
+                @foreach (var turn in _turns)
+                {
+                    <article class="chat-message user">
+                        <div class="chat-role">You</div>
+                        <div class="chat-content">@turn.Goal</div>
+                    </article>
+
+                    <article class="chat-message assistant">
+                        <div class="chat-role">Agent</div>
+                        @if (turn.Task is null)
+                        {
+                            <div class="chat-content muted">Task not found.</div>
+                        }
+                        else
+                        {
+                            <div class="chat-content">
+                                <AgentChatResultView Tool="@turn.Task.Tool"
+                                                     Status="@turn.Task.Status.ToString()"
+                                                     RoutingReason="@turn.RoutingReason"
+                                                     Error="@turn.Task.Error"
+                                                     TaskId="@turn.Task.Id"
+                                                     Result="@turn.Result" />
+                            </div>
+                            <div class="chat-meta muted">
+                                Task @turn.Task.Id · @turn.CreatedAt.ToLocalTime().ToString("g")
+                            </div>
+                        }
+                    </article>
+                }
+            </div>
+
+            @if (!string.IsNullOrEmpty(_error))
+            {
+                <p class="status error">@_error</p>
+            }
+
+            <div class="chat-form">
+                <textarea class="chat-input"
+                          name="goal"
+                          placeholder="What should the agent do?"
+                          rows="3"
+                          required></textarea>
+                <button class="btn btn-primary" type="submit">Send</button>
+            </div>
+        </section>
+    </form>
+}
+
+@code {
+    [Parameter]
+    public Guid? ThreadId { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Error { get; set; }
+
+    private bool _bootstrapping = true;
+    private bool _threadOk;
+    private string? _error;
+    private IReadOnlyList<DocumentListItemDto> _documents = [];
+    private IReadOnlyList<TurnVm> _turns = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _bootstrapping = true;
+        _error = Error;
+
+        try
+        {
+            if (ThreadId is null)
+            {
+                var id = Threads.Create();
+                Navigation.NavigateTo($"/agent/chat/{id}", replace: true);
+                return;
+            }
+
+            _threadOk = Threads.Exists(ThreadId.Value);
+            if (!_threadOk)
+                return;
+
+            _documents = (await Documents.GetAllAsync())
+                .Where(d => d.Status.Equals("Extracted", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            var stored = Threads.GetTurns(ThreadId.Value);
+            var rendered = new List<TurnVm>(stored.Count);
+            foreach (var turn in stored)
+            {
+                var task = await Tasks.GetAsync(turn.TaskId);
+                rendered.Add(new TurnVm(
+                    turn.Goal,
+                    turn.TaskId,
+                    turn.CreatedAt,
+                    task,
+                    ReadRoutingReason(task?.InputJson),
+                    AgentChatResultParser.Parse(task?.Tool ?? "", task?.ResultJson)));
+            }
+
+            _turns = rendered;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _bootstrapping = false;
+        }
+    }
+
+    private static string? ReadRoutingReason(string? inputJson)
+    {
+        if (string.IsNullOrWhiteSpace(inputJson))
+            return null;
+
+        try
+        {
+            using var doc = JsonDocument.Parse(inputJson);
+            return doc.RootElement.TryGetProperty("routingReason", out var el)
+                ? el.GetString()
+                : null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    private sealed record TurnVm(
+        string Goal,
+        Guid TaskId,
+        DateTimeOffset CreatedAt,
+        AgentAction? Task,
+        string? RoutingReason,
+        AgentChatResultVm Result);
+}

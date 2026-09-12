@@ -11,7 +11,7 @@
 | Файл | Что снять | URL / где |
 |------|-----------|-----------|
 | **`01-documents.png`** | Список документов: несколько строк, статусы **Extracted**, видны schet A/B | http://localhost:8080/documents |
-| **`03-agent-reconcile.png`** | Agent: выбраны 2 счёта, режим reconcile **или** goal, виден результат (расхождения 112700 vs 115000) | http://localhost:8080/agent |
+| **`03-agent-reconcile.png`** | **Предпочтительно Agent chat:** 2 счёта отмечены, в ленте цель + reconcile с расхождениями (112700 vs 115000). Альтернатива: классический `/agent` | http://localhost:8080/agent/chat |
 | **`04-metrics.png`** | Dashboard: LLM stats + таблица eval-кейсов (14 cases) | http://localhost:8080/metrics |
 | **`05-mcp-cursor.png`** | Cursor: MCP **Connected** + фрагмент чата с `list_documents` или `reconcile` | Cursor Settings → MCP + чат |
 
@@ -47,9 +47,16 @@ docker compose up -d
 
 ### Agent reconcile (шаги)
 
-1. `/agent` → отметить **schet A** и **schet B** (Extracted).
-2. Режим **reconcile** → Run → дождаться Completed.
-3. Скрин: чекбоксы + JSON/текст с **2 расхождениями** (total, vat).
+**Agent chat (предпочтительно):**
+
+1. `/agent/chat` → отметить **schet A** и **schet B**.
+2. Цель: «Сверь счета и покажи расхождения» → Send.
+3. Скрин: лента You + Agent с расхождениями total/vat.
+
+**Классический `/agent`:**
+
+1. `/agent` → отметить два счёта → Goal или Explicit reconcile → Run.
+2. Скрин: результат с **2 расхождениями**.
 
 ### MCP (шаги)
 

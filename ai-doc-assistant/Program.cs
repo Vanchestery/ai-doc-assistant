@@ -79,6 +79,7 @@ builder.Services.AddScoped<AgentToolRegistry>();
 builder.Services.AddScoped<AgentGoalRouterService>();
 builder.Services.AddScoped<AgentGoalService>();
 builder.Services.AddScoped<AgentTaskService>();
+builder.Services.AddSingleton<AgentChatThreadStore>();
 
 builder.Services.AddScoped<IDataCountsProvider, EfDataCountsProvider>();
 builder.Services.AddSingleton<EvalSuiteService>();

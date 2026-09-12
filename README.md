@@ -7,11 +7,11 @@
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](docker-compose.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**AI-ассистент для автоматизации документооборота бэк-офиса** — от PDF до agent tools и MCP в Cursor.
+**AI-ассистент для автоматизации документооборота бэк-офиса** — от PDF до agent chat и MCP в Cursor.
 
-Загрузка счетов и сканов → structured extraction (LLM) → RAG-чат с **цитатами из документов** → агент: сверка, сводки, Excel-отчёты → метрики, evals, Blazor UI.
+Загрузка счетов и сканов → structured extraction (LLM) → **agent chat** (цель → tool → результат в ленте) → RAG с цитатами → метрики, evals, MCP.
 
-> *English:* Document AI pipeline on .NET 10 — extraction, pgvector RAG, tool-using agent, observability, and Cursor MCP integration.
+> *English:* Document AI pipeline on .NET 10 — extraction, conversational agent chat, pgvector RAG, observability, and Cursor MCP integration.
 
 ---
 
@@ -20,10 +20,21 @@
 | | |
 |---|---|
 | **Stack** | ASP.NET Core 10 · PostgreSQL + pgvector (HNSW) · EF Core · DeepSeek · Ollama embeddings |
-| **AI patterns** | Structured extraction · RAG with grounded citations · JSON goal-router · MCP tools |
+| **AI patterns** | Structured extraction · Agent chat (goal → tool) · RAG with citations · MCP tools |
 | **Quality** | 47 unit tests · 14 deterministic eval cases · LLM cost & latency (p50/p95) |
 | **Delivery** | Docker one-command demo · Blazor UI · Swagger · [32 architectural decisions](DECISIONS.md) |
 | **IDE integration** | MCP stdio server — Cursor calls your document tools from chat |
+
+---
+
+## Demo path (2 minutes)
+
+1. Open http://localhost:8080/documents — upload two invoices (drag-and-drop), wait for **Extracted**.
+2. Open http://localhost:8080/agent/chat — select both documents.
+3. Send a goal, e.g. *“Compare these invoices and show the differences”*.
+4. The router picks a tool (`reconcile` / `summarize` / `generate_report`) and shows the result in the chat lane.
+
+Classic form UI remains at `/agent` (explicit tool + goal). MCP in Cursor is the same tools without the browser.
 
 ---
 
@@ -35,7 +46,7 @@
 | Extraction JSON | RAG chat + citations | | |
 | ![Document extraction](docs/screenshots/02-extraction.png) | ![RAG chat](docs/screenshots/06-rag-chat.png) | | |
 
-[Shoot guide](docs/screenshots/README.md) · Social preview: upload `docs/screenshots/00-banner.png` in repo **Settings → General**.
+Prefer a fresh **Agent chat** shot when you can: `/agent/chat` with a reconcile turn in the lane ([shoot guide](docs/screenshots/README.md)). Social preview: upload `docs/screenshots/00-banner.png` in repo **Settings → General**.
 
 ---
 
@@ -81,8 +92,9 @@ flowchart TB
 ## Features
 
 - **Documents** — PDF text (PdfPig) + OCR (Tesseract) → LLM JSON extraction with validation
+- **Agent chat** — plain-language goal → JSON router → `reconcile` / `summarize` / `generate_report` in a message lane
 - **RAG chat** — chunking, 1024-dim embeddings, cosine search, answers with source citations
-- **Agent** — `reconcile` (deterministic), `summarize` (LLM), `generate_report` (xlsx), goal-mode router
+- **Agent (classic)** — same tools via `/agent` form (explicit tool or goal)
 - **Metrics** — token usage, estimated USD, latency percentiles, DB counts, eval dashboard
 - **MCP** — 9 tools for Cursor (`list_documents`, `reconcile`, `run_agent_goal`, …)
 
@@ -137,7 +149,7 @@ docker compose up --build -d
 
 **Metrics:** `GET /api/metrics/summary` · `GET /api/metrics/evals`
 
-**UI routes:** `/`, `/documents`, `/chat`, `/agent`, `/metrics`
+**UI routes:** `/`, `/documents`, `/chat`, `/agent`, `/agent/chat`, `/metrics`
 
 </details>
 
@@ -187,7 +199,7 @@ Architecture decisions and trade-offs: **[DECISIONS.md](DECISIONS.md)** (32 entr
 - [x] Phase 4 — evals, LLM telemetry, metrics
 - [x] Phase 5 — Blazor UI + prod compose
 - [x] Phase 6 — MCP stdio server
-- [ ] Conversational agent chat UI (next)
+- [x] Agent chat UI — `/agent/chat` (one message ≈ one tool run)
 
 ---
 
