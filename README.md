@@ -40,13 +40,13 @@ Classic form UI remains at `/agent` (explicit tool + goal). MCP in Cursor is the
 
 ## Screenshots
 
-| Documents | Agent (reconcile) | Metrics | MCP in Cursor |
+| Documents | Agent chat (reconcile) | Metrics | MCP in Cursor |
 |:---:|:---:|:---:|:---:|
-| ![Documents list](docs/screenshots/01-documents.png) | ![Agent reconcile](docs/screenshots/03-agent-reconcile.png) | ![Metrics dashboard](docs/screenshots/04-metrics.png) | ![Cursor MCP](docs/screenshots/05-mcp-cursor.png) |
+| ![Documents list](docs/screenshots/01-documents.png) | ![Agent chat reconcile](docs/screenshots/03-agent-reconcile.png) | ![Metrics dashboard](docs/screenshots/04-metrics.png) | ![Cursor MCP](docs/screenshots/05-mcp-cursor.png) |
 | Extraction JSON | RAG chat + citations | | |
 | ![Document extraction](docs/screenshots/02-extraction.png) | ![RAG chat](docs/screenshots/06-rag-chat.png) | | |
 
-Prefer a fresh **Agent chat** shot when you can: `/agent/chat` with a reconcile turn in the lane ([shoot guide](docs/screenshots/README.md)). Social preview: upload `docs/screenshots/00-banner.png` in repo **Settings → General**.
+[Shoot guide](docs/screenshots/README.md) · Social preview: upload `docs/screenshots/00-banner.png` in repo **Settings → General**.
 
 ---
 
