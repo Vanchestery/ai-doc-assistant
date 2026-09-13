@@ -46,7 +46,7 @@ Classic form UI remains at `/agent` (explicit tool + goal). MCP in Cursor is the
 | Extraction JSON | RAG chat + citations | | |
 | ![Document extraction](docs/screenshots/02-extraction.png) | ![RAG chat](docs/screenshots/06-rag-chat.png) | | |
 
-[Shoot guide](docs/screenshots/README.md) · Social preview: upload `docs/screenshots/00-banner.png` in repo **Settings → General**.
+Social preview: upload `docs/screenshots/00-banner.png` in repo **Settings → General**.
 
 ---
 
