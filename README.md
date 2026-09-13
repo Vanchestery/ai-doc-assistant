@@ -7,22 +7,22 @@
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](docker-compose.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**AI-ассистент для автоматизации документооборота бэк-офиса** — от PDF до agent chat и MCP в Cursor.
+**AI assistant for back-office document workflows** — from PDF upload to agent chat and MCP in Cursor.
 
-Загрузка счетов и сканов → structured extraction (LLM) → **agent chat** (цель → tool → результат в ленте) → RAG с цитатами → метрики, evals, MCP.
+Upload invoices and scans → structured extraction (LLM) → **agent chat** (goal → tool → result in the lane) → RAG with citations → metrics, evals, MCP.
 
-> *English:* Document AI pipeline on .NET 10 — extraction, conversational agent chat, pgvector RAG, observability, and Cursor MCP integration.
+Document AI pipeline on .NET 10: extraction, conversational agent chat, pgvector RAG, observability, and Cursor MCP integration.
 
 ---
 
-## Highlights (для ревьюера / HR)
+## Highlights (for reviewers / HR)
 
 | | |
 |---|---|
 | **Stack** | ASP.NET Core 10 · PostgreSQL + pgvector (HNSW) · EF Core · DeepSeek · Ollama embeddings |
 | **AI patterns** | Structured extraction · Agent chat (goal → tool) · RAG with citations · MCP tools |
 | **Quality** | 47 unit tests · 14 deterministic eval cases · LLM cost & latency (p50/p95) |
-| **Delivery** | Docker one-command demo · Blazor UI · Swagger · [32 architectural decisions](DECISIONS.md) |
+| **Delivery** | Docker one-command demo · Blazor UI · Swagger · [architecture decisions](DECISIONS.en.md) ([RU](DECISIONS.md)) |
 | **IDE integration** | MCP stdio server — Cursor calls your document tools from chat |
 
 ---
@@ -111,7 +111,7 @@ cp .env.example .env   # set DEEPSEEK_API_KEY=sk-...
 docker compose up --build -d
 ```
 
-PowerShell (без `.env`):
+PowerShell (without a `.env` file):
 
 ```powershell
 $env:DEEPSEEK_API_KEY = "sk-..."
@@ -124,7 +124,7 @@ docker compose up --build -d
 | http://localhost:8080/swagger | OpenAPI |
 | http://localhost:8080/health | Health check |
 
-**VS dev:** `docker compose up db -d` → run `ai-doc-assistant` (port **5208**). Для загрузки PDF в F5 удобнее drag-and-drop (системный Browse под Interactive Server на Windows иногда роняет процесс).
+**VS dev:** `docker compose up db -d` → run `ai-doc-assistant` (port **5208**). Prefer drag-and-drop for PDF upload under F5 — the system Browse dialog can crash the debugger on Windows (`exited -1`).
 
 ### Secrets
 
@@ -186,7 +186,7 @@ dotnet test ai-doc-assistant.slnx   # 47 tests
 dotnet build ai-doc-assistant.slnx
 ```
 
-Architecture decisions and trade-offs: **[DECISIONS.md](DECISIONS.md)** (32 entries, phases 0–6).
+Architecture decisions and trade-offs: **[DECISIONS.en.md](DECISIONS.en.md)** (English) · **[DECISIONS.md](DECISIONS.md)** (Russian) — 32 entries, phases 0–6.
 
 ---
 
@@ -205,6 +205,6 @@ Architecture decisions and trade-offs: **[DECISIONS.md](DECISIONS.md)** (32 entr
 
 ## Author
 
-**Иван** — [.NET + AI portfolio project](https://github.com/Vanchestery/ai-doc-assistant)
+**Ivan** — [.NET + AI portfolio project](https://github.com/Vanchestery/ai-doc-assistant)
 
 Questions or demo walkthrough — open an issue or contact via GitHub profile.

@@ -2,6 +2,8 @@
 
 Формат: развилка → варианты → что выбрали и почему.
 
+English version for reviewers: **[DECISIONS.en.md](DECISIONS.en.md)**.
+
 Решения перенесены из исходного прототипа в rebuild (`ai-doc-assistant`): та же архитектура, стек обновлён до **.NET 10**, UI-проект — Blazor Web App в папке `ai-doc-assistant/`.
 
 ---
